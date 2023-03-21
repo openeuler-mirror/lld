@@ -1,6 +1,6 @@
-%global maj_ver 12
+%global maj_ver 15
 %global min_ver 0
-%global patch_ver 1
+%global patch_ver 7
 
 # Don't include unittests in automatic generation of provides or requires.
 %global __provides_exclude_from ^%{_libdir}/lld/.*$
@@ -80,7 +80,9 @@ rm %{buildroot}%{_includedir}/mach-o/compact_unwind_encoding.h
 %{_bindir}/lld*
 %{_bindir}/ld.lld
 %{_bindir}/ld64.lld
+%ifnarch riscv64
 %{_bindir}/ld64.lld.darwinnew
+%endif
 %{_bindir}/wasm-ld
 
 %files devel
@@ -92,6 +94,9 @@ rm %{buildroot}%{_includedir}/mach-o/compact_unwind_encoding.h
 %{_libdir}/liblld*.so.*
 
 %changelog
+* Wed Mar 22 2023 jchzhou <zhoujiacheng@iscas.ac.cn> - 15.0.7-1
+- Upgrade to 15.0.7.
+
 * Mon Feb 18 2023 cf-zhao <zhaochuanfeng@huawei.com> - 12.0.1-1
 - Package init
 
