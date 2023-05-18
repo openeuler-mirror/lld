@@ -5,8 +5,6 @@ Subject: [PATCH 2/2] [PATCH][lld] Import compact_unwind_encoding.h from
  libunwind
 
 This avoids an implicit cross package dependency
-
-Signed-off-by: Chenxi Mao <chenxi.mao@suse.com>
 ---
  lld/include/mach-o/compact_unwind_encoding.h | 477 +++++++++++++++++++++++++++
  1 file changed, 477 insertions(+)

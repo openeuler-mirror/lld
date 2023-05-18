@@ -1,4 +1,4 @@
-# lld-15
+# lld
 
 #### 介绍
 LLVM Linker
