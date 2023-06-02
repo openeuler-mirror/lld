@@ -1,16 +1,26 @@
+%bcond_without sys_llvm
 %bcond_without check
 
 %global maj_ver 15
 %global min_ver 0
 %global patch_ver 7
 
+%if %{with sys_llvm}
+%global pkg_name lld
+%global bin_suffix %{nil}
+%global install_prefix %{_prefix}
+%else
 %global pkg_name lld%{maj_ver}
 %global bin_suffix -%{maj_ver}
 %global install_prefix %{_libdir}/llvm%{maj_ver}
-%global install_includedir %{install_prefix}/include
-%global install_libdir %{install_prefix}/lib
+%endif
+
 %global install_bindir %{install_prefix}/bin
+%global install_libdir %{install_prefix}/lib
+%global install_includedir %{install_prefix}/include
 %global pkg_bindir %{install_bindir}
+%global pkg_libdir %{install_libdir}
+%global pkg_includedir %{install_includedir}
 
 # Don't include unittests in automatic generation of provides or requires.
 %global __provides_exclude_from ^%{_libdir}/lld/.*$
@@ -18,7 +28,7 @@
 
 Name:		%{pkg_name}
 Version:	%{maj_ver}.%{min_ver}.%{patch_ver}
-Release:	1
+Release:	2
 Summary:	The LLVM Linker
 
 License:	NCSA
@@ -29,9 +39,15 @@ Patch1:		fedora-PATCH-lld-Import-compact_unwind_encoding.h-from-libu.patch
 
 BuildRequires:	clang
 BuildRequires:	cmake
+%if %{with sys_llvm}
+BuildRequires:  llvm-devel = %{version}
+BuildRequires:  llvm-googletest = %{version}
+BuildRequires:  llvm-test = %{version}
+%else
 BuildRequires:	llvm%{maj_ver}-devel = %{version}
 BuildRequires:	llvm%{maj_ver}-googletest = %{version}
 BuildRequires:	llvm%{maj_ver}-test = %{version}
+%endif
 BuildRequires:	ncurses-devel
 BuildRequires:	ninja-build
 BuildRequires:	python3-rpm-macros
@@ -76,8 +92,8 @@ cd _build
 	-DLLVM_INCLUDE_TESTS=ON \
 	-DLLVM_EXTERNAL_LIT=%{_bindir}/lit \
 	-DLLVM_LIT_ARGS="-sv \
-	--path %{_libdir}/llvm%{maj_ver}" \
-	-DLLVM_MAIN_SRC_DIR=%{_libdir}/llvm%{maj_ver}/src
+	--path %{install_prefix}" \
+	-DLLVM_MAIN_SRC_DIR=%{install_prefix}/src
 
 %ninja_build
 
@@ -86,12 +102,14 @@ cd _build
 
 rm %{buildroot}%{install_includedir}/mach-o/compact_unwind_encoding.h
 
+%if %{without sys_llvm}
 # Add version suffix to binaries
 mkdir -p %{buildroot}/%{_bindir}
 for f in %{buildroot}/%{install_bindir}/*; do
   filename=`basename $f`
   ln -s ../../%{install_bindir}/$filename %{buildroot}/%{_bindir}/$filename%{bin_suffix}
 done
+%endif
 
 %check
 %if %{with check}
@@ -101,22 +119,27 @@ cd _build
 
 %files
 %license LICENSE.TXT
+%if %{without sys_llvm}
 %{_bindir}/lld%{bin_suffix}
 %{_bindir}/lld-link%{bin_suffix}
 %{_bindir}/ld.lld%{bin_suffix}
 %{_bindir}/ld64.lld%{bin_suffix}
 %{_bindir}/wasm-ld%{bin_suffix}
-%{pkg_bindir}
+%endif
+%{pkg_bindir}/*
 
 %files devel
-%{install_includedir}/lld
-%{install_libdir}/liblld*.so
-%{install_libdir}/cmake/lld/
+%{pkg_includedir}/lld
+%{pkg_libdir}/liblld*.so
+%{pkg_libdir}/cmake/lld/
 
 %files libs
-%{install_libdir}/liblld*.so.*
+%{pkg_libdir}/liblld*.so.*
 
 %changelog
+* Thu May 25 2023 cf-zhao <zhaochuanfeng@huawei.com> - 15.0.7-2
+- Support building system llvm and multi-version llvm in one spec file.
+
 * Mon Feb 20 2023 Chenxi Mao <chenxi.mao@suse.com> - 15.0.7-1
 - Upgrade to 15.0.7.
 
