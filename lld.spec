@@ -16,7 +16,11 @@
 %endif
 
 %global install_bindir %{install_prefix}/bin
+%if 0%{?__isa_bits} == 64
+%global install_libdir %{install_prefix}/lib64
+%else
 %global install_libdir %{install_prefix}/lib
+%endif
 %global install_includedir %{install_prefix}/include
 %global pkg_bindir %{install_bindir}
 %global pkg_libdir %{install_libdir}
